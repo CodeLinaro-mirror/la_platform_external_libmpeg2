@@ -40,7 +40,7 @@ Because of temporal dependency in deinterlacer one additional buffer is also nee
 #define DEC_ORDER               0
 
 #define MAX_BITSTREAM_BUFFER_SIZE       2000 * 1024
-
+#define MIN_BUFFER_BYTES_AT_EOS 8
 /* Flag to signal that buffer is held by deinterlacing */
 #define MPEG2_BUF_MGR_DEINT (BUF_MGR_DISP << 1)
 
@@ -335,6 +335,9 @@ typedef struct dec_state_struct_t
 
     WORD32          i4_start_mb_y;
     WORD32          i4_end_mb_y;
+
+    /* Buffer to store the input stream */
+    UWORD8 *pu1_input_buffer;
 
     /**
      * Job queue buffer base

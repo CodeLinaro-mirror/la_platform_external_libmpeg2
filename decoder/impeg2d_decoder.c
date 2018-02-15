@@ -97,13 +97,20 @@ void impeg2d_dec_hdr(void *pv_dec,impeg2d_video_decode_ip_t *ps_ip,
 {
 
     UWORD32 u4_bits_read;
+    UWORD32 u4_size = ps_ip->s_ivd_video_decode_ip_t.u4_num_Bytes;
     dec_state_t *ps_dec;
 
     ps_dec = (dec_state_t *)pv_dec;
     ps_op->s_ivd_video_decode_op_t.u4_error_code = 0;
 
-    impeg2d_bit_stream_init(&(ps_dec->s_bit_stream),ps_ip->s_ivd_video_decode_ip_t.pv_stream_buffer,
-        ps_ip->s_ivd_video_decode_ip_t.u4_num_Bytes);
+    if (u4_size > MAX_BITSTREAM_BUFFER_SIZE)
+    {
+        u4_size = MAX_BITSTREAM_BUFFER_SIZE;
+    }
+
+    memcpy(ps_dec->pu1_input_buffer, ps_ip->s_ivd_video_decode_ip_t.pv_stream_buffer, u4_size);
+
+    impeg2d_bit_stream_init(&(ps_dec->s_bit_stream), ps_dec->pu1_input_buffer, u4_size);
 
     {
         {
@@ -190,12 +197,19 @@ void impeg2d_dec_frm(void *pv_dec,impeg2d_video_decode_ip_t *ps_ip,
 
     IMPEG2D_FRM_NUM_SET();
 
-    ps_dec->pu1_inp_bits_buf = ps_ip->s_ivd_video_decode_ip_t.pv_stream_buffer;
+    if (u4_size > MAX_BITSTREAM_BUFFER_SIZE)
+    {
+        u4_size = MAX_BITSTREAM_BUFFER_SIZE;
+    }
+
+    memcpy(ps_dec->pu1_input_buffer, ps_ip->s_ivd_video_decode_ip_t.pv_stream_buffer, u4_size);
+
+    ps_dec->pu1_inp_bits_buf = ps_dec->pu1_input_buffer;
+
     ps_dec->u4_num_inp_bytes = u4_size;
     ps_stream  = &ps_dec->s_bit_stream;
 
-
-    impeg2d_bit_stream_init(ps_stream,ps_ip->s_ivd_video_decode_ip_t.pv_stream_buffer,u4_size);
+    impeg2d_bit_stream_init(ps_stream, ps_dec->pu1_input_buffer, u4_size);
 
     /* @ */ /* Updating the bufferID */
 
