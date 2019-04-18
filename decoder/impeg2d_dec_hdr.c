@@ -152,6 +152,12 @@ IMPEG2D_ERROR_CODES_T impeg2d_dec_seq_hdr(dec_state_t *ps_dec)
     u2_width    = impeg2d_bit_stream_get(ps_stream,12);
     u2_height   = impeg2d_bit_stream_get(ps_stream,12);
 
+    if (0 == u2_width || 0 == u2_height)
+    {
+        IMPEG2D_ERROR_CODES_T e_error = IMPEG2D_FRM_HDR_DECODE_ERR;
+        return e_error;
+    }
+
     if ((u2_width != ps_dec->u2_horizontal_size)
                     || (u2_height != ps_dec->u2_vertical_size))
     {
@@ -804,6 +810,12 @@ IMPEG2D_ERROR_CODES_T impeg2d_dec_slice(dec_state_t *ps_dec)
     {
         ps_dec->u2_mb_y    = u4_slice_vertical_position;
         ps_dec->u2_mb_x    = 0;
+
+        /* Update the number of MBs left, since we have probably missed a slice
+         * (that's why we see a mismatch between u2_mb_y and current position).
+         */
+        ps_dec->u2_num_mbs_left = (ps_dec->u2_num_vert_mb - ps_dec->u2_mb_y)
+                        * ps_dec->u2_num_horiz_mb;
     }
     ps_dec->u2_first_mb = 1;
 
